@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    b,
+    bold {
+        @apply text-neutral-900;
+    }
+
+    select,
+    input {
+        @apply w-full border-neutral-500 rounded-md  focus:ring-indigo-800 focus:border-indigo-800;
+    }
+
+    button {
+        @apply font-bold bg-indigo-300 px-2 py-1 rounded-md hover:bg-indigo-800 transition hover:text-[contrast-color(var(--indigo-700,currentColor))] active:bg-indigo-950;
+    }
+}

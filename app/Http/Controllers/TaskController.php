@@ -5,16 +5,22 @@ use App\Models\Task;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Requests\StoreTaskRequest;
+use App\Services\TaskService;
+use Illuminate\Http\RedirectResponse;
 
 class TaskController extends Controller
 {
+    public function __construct(protected TaskService $taskService) {}
+
     public function index(Request $request)
     {
         $projectId = $request->query("project_id");
 
-        $tasks = Task::when($projectId, function ($query, $projectId) {
-            return $query->where("project_id", $projectId);
-        })
+        $tasks = Task::with("project")
+            ->when($projectId, function ($query, $projectId) {
+                return $query->where("project_id", $projectId);
+            })
             ->orderBy("priority")
             ->get();
 
@@ -25,22 +31,13 @@ class TaskController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            "name" => "required|string|max:255",
-            "project_id" => "nullable|exists:projects,id",
-        ]);
+        $this->taskService->createTask($request->validated());
 
-        $maxPriority =
-            Task::where("project_id", $validated["project_id"])->max(
-                "priority",
-            ) ?? 0;
-        $validated["priority"] = $maxPriority + 1;
-
-        Task::create($validated);
-
-        return redirect()->back();
+        return redirect()
+            ->route("tasks.index")
+            ->with("success", "Tarefa criada!");
     }
 
     public function update(Request $request, Task $task)

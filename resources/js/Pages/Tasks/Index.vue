@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
+import { Funnel } from "@lucide/vue";
 
 const props = defineProps({
     tasks: Array,
@@ -10,6 +11,14 @@ const props = defineProps({
 
 // Local state for drag and drop
 const localTasks = ref([...props.tasks]);
+const selectedProjectId = ref(props.currentProjectId || "");
+
+watch(
+    () => props.currentProjectId,
+    (id) => {
+        selectedProjectId.value = id || "";
+    },
+);
 
 // Sync local tasks if props change (e.g. after adding/deleting)
 watch(
@@ -20,10 +29,9 @@ watch(
     { deep: true },
 );
 
-// Form for new task
 const form = useForm({
     name: "",
-    project_id: props.currentProjectId || "",
+    project_id: selectedProjectId.value,
 });
 
 const addTask = () => {
@@ -74,19 +82,19 @@ const filterProject = (event) => {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Task Manager</h1>
+    <div
+        class="flex flex-col gap-2 max-w-5xl mx-auto p-2 bg-neutral-200 min-h-screen"
+    >
+        <h1 class="mx-auto text-4xl font-mono tracking-wider font-bold p-1">
+            The Task Manager
+        </h1>
 
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Filter by Project (Bonus)</label
-            >
-            <select
-                @change="filterProject"
-                v-model="form.project_id"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-                <option value="">All Projects (or Create Unassigned)</option>
+        <div class="">
+            <label class="flex gap-2 px-2 py-1"
+                ><Funnel /> Filter by Project
+            </label>
+            <select @change="filterProject" :value="selectedProjectId" class="">
+                <option value="">All Projects</option>
                 <option
                     v-for="project in projects"
                     :key="project.id"
@@ -97,75 +105,34 @@ const filterProject = (event) => {
             </select>
         </div>
 
-        <form @submit.prevent="addTask" class="flex gap-4 mb-8">
+        <form @submit.prevent="addTask" class="flex gap-2">
             <input
                 v-model="form.name"
                 type="text"
                 placeholder="New Task Name..."
                 required
-                class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                class="flex-1"
             />
-            <button
-                type="submit"
-                :disabled="form.processing"
-                class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition"
-            >
+            <button type="submit" :disabled="form.processing" class="">
                 Add Task
             </button>
         </form>
 
-        <div class="bg-white rounded-lg shadow">
-            <draggable
-                v-model="localTasks"
-                @end="onDragEnd"
-                item-key="id"
-                class="divide-y divide-gray-200"
-            >
-                <template #item="{ element, index }">
-                    <div
-                        class="p-4 flex items-center justify-between hover:bg-gray-50 cursor-move group"
-                    >
-                        <div class="flex items-center gap-4">
-                            <span class="text-gray-400 font-mono"
-                                >#{{ index + 1 }}</span
-                            >
-                            <span class="font-medium text-gray-900">{{
-                                element.name
-                            }}</span>
-                            <span
-                                class="text-xs text-gray-500"
-                                v-if="element.project_id"
-                            >
-                                (Project ID: {{ element.project_id }})
-                            </span>
-                        </div>
+        <ul
+            class="flex flex-col gap-2 items-center p-2 justify-center bg-neutral-100 min-h-36 rounded-md border-dashed border border-neutral-600"
+        >
+            <li v-if="localTasks.length === 0" class="">
+                No tasks found. Create your first!
+            </li>
 
-                        <div
-                            class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <button
-                                @click="updateTask(element)"
-                                class="text-blue-600 hover:text-blue-800 text-sm"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                @click="deleteTask(element.id)"
-                                class="text-red-600 hover:text-red-800 text-sm"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </template>
-            </draggable>
-
-            <div
-                v-if="localTasks.length === 0"
-                class="p-8 text-center text-gray-500"
+            <li
+                class="bg-neutral-200 w-full rounded-md px-2 py-1"
+                v-for="task in localTasks"
+                v-else
             >
-                No tasks found. Create one above!
-            </div>
-        </div>
+                <span> {{ task.project?.name ?? "No project" }}</span>
+                {{ task.name }}
+            </li>
+        </ul>
     </div>
 </template>
