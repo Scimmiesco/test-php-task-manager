@@ -19,6 +19,6 @@
     }
 
     button {
-        @apply font-bold bg-indigo-300 px-2 py-1 rounded-md hover:bg-indigo-800 transition hover:text-[contrast-color(var(--indigo-700,currentColor))] active:bg-indigo-950;
+        @apply flex text-center items-center font-bold bg-indigo-300 px-2 py-1 rounded-md hover:bg-indigo-800 transition hover:text-[contrast-color(var(--indigo-700,currentColor))] active:bg-indigo-950;
     }
 }

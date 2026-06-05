@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\ProjectController;
 
 Route::get("/", [TaskController::class, "index"])->name("tasks.index");
 
@@ -14,4 +15,7 @@ Route::delete("/tasks/{task}", [TaskController::class, "destroy"])->name(
 );
 Route::post("/tasks/reorder", [TaskController::class, "reorder"])->name(
     "tasks.reorder",
+);
+Route::post("/projects", [ProjectController::class, "store"])->name(
+    "projects.store",
 );
